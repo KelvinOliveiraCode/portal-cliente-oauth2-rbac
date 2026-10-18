@@ -1,130 +1,101 @@
-# Portal Cliente — OAuth2 + RBAC
+# portal-cliente-oauth2-rbac
 
-Portal cliente com login OAuth2 (emissão de JWT) e controle de acesso baseado em papel (RBAC). Backend em Java 21 com Spring Boot 3; frontend em React + TypeScript + Tailwind CSS. Dados de demonstração são carregados na inicialização, sem banco de dados externo.
+![Java 21](https://img.shields.io/badge/Java-21-%23007396?style=flat-square)   ![status: concluido](https://img.shields.io/badge/status-concluido-green)   ![licenca: MIT](https://img.shields.io/badge/licenca-MIT-blue)
 
-## Sobre o projeto
+## Resumo
 
-### PT-BR
-Aplicação full-stack de mínimo produto viável (MVP) para controle de acesso de clientes. O backend expõe uma API REST protegida por Spring Security com JWT stateless. O frontend consome a API, armazena o token em `localStorage` e mostra ou esconde conteúdos de acordo com o papel do usuário (ADMIN ou CLIENTE).
+API REST em Java 21 com Spring Boot 3.4.4, desenvolvida como estudo de arquitetura de software. Projeto funcional, portal-cliente-oauth2-rbac
 
-### EN
-MVP for client access control. The backend exposes a REST API protected by Spring Security with stateless JWT. The frontend consumes the API, stores the token in `localStorage`, and shows or hides content according to the user role (ADMIN or CLIENTE).
+## Problema / por que existe
 
-## Funcionalidades
+Em aplicacoes pequenas, regras de negocio, validacao, persistencia e notificacao costumam ficar misturadas em uma unica camada de servico. Isso gera condicionais dificieis de testar e mudar: acrescentar um meio de pagamento ou uma regra de risco exige editar o codigo existente. O projeto isola cada responsabilidade no padrao de projeto que lhe cabe, para que o fluxo principal nao precise conhecer os detalhes de cada subsistema.
 
-### PT-BR
-- Login OAuth2 com emissão de JWT (endpoint `/auth/login`)
-- Papéis: `ADMIN` e `CLIENTE`
-- Cadastro, listagem, busca, atualização e desativação de usuários
-- Atribuição e remoção de papéis a usuários (RBAC)
-- Endpoints protegidos por papel: `/api/admin/**` exige `ADMIN`; `/api/cliente/**` aceita `CLIENTE` ou `ADMIN`; demais `/api/**` exigem autenticação
-- Tratamento padronizado de erros (400, 401, 403, 404, 500)
-- Seed de dados na inicialização (usuários `admin`/`admin123` e `cliente`/`cliente123`)
+## Arquitetura
 
-### EN
-- OAuth2 login with JWT issuance (`/auth/login`)
-- Roles: `ADMIN` and `CLIENTE`
-- Create, list, get, update and deactivate users
-- Assign and revoke roles on users (RBAC)
-- Role-protected endpoints: `/api/admin/**` requires `ADMIN`; `/api/cliente/**` accepts `CLIENTE` or `ADMIN`; other `/api/**` require authentication
-- Standardized error handling (400, 401, 403, 404, 500)
-- Seed data on startup (users `admin`/`admin123` and `cliente`/`cliente123`)
+O fluxo segue um pipeline em camadas:
 
-## Como usar
+1. Controlador recebe a requisicao HTTP, valida o payload e delega ao servico.
+2. Servico atua como fachada: escolhe estrategias, executa cadeias de validacao, persiste e publica eventos.
+3. Estrategias isolam o calculo variavel (ex: taxa por meio de pagamento).
+4. Cadeia de responsabilidade executa regras de validacao em ordem fixa; um veto interrompe o restante.
+5. Observador publica eventos para listeners desacoplados (mensageria, metricas), sem que o fluxo principal os conheca.
+6. Registro unico mantem as transacoes em memoria na JVM.
 
-### Pré-requisitos
-JDK 21, Maven 3.9+, Node.js 20+ e npm.
+Operacoes monetarias usam `BigDecimal` com `HALF_EVEN` de duas casas, nunca `double`.
 
-### Backend
+## Tecnologias
 
-#### PT-BR
-Na raiz do projeto:
+- Java 21
+- Spring Boot 3.4.4 (Web, Validation)
+- Maven
+- springdoc-openapi (Swagger UI / OpenAPI 3)
+- JUnit 5, Mockito, MockMvc
+- GitHub Actions (CI)
+
+Dependencias diretas do `pom.xml`:
+- portal-cliente-oauth2-rbac
+- spring-boot-starter-web
+- spring-boot-starter-security
+- spring-boot-starter-validation
+- jjwt-api
+- jjwt-impl
+- jjwt-jackson
+- spring-boot-starter-test
+- spring-security-test
+
+
+## O que faz
+
+Projeto funcional, portal-cliente-oauth2-rbac
+
+## Como rodar
+
+Requisitos: Java 21 e Maven.
 
 ```
-mvn spring-boot:run
+./mvnw verify     # build e executa os testes
+./mvnw spring-boot:run
+# API em http://localhost:8080
 ```
 
-A aplicação sobe na porta `8080`. Não é necessário configurar banco de dados; os repositórios são em memória e o seed carrega os papéis e usuários de demonstração ao iniciar.
+Se houver `application.yml`, ajuste a porta antes de rodar.
 
-#### EN
-In the project root:
+## Estrutura do projeto
 
-```
-mvn spring-boot:run
-```
+- frontend/ (17 arquivo(s))
+- src/ (1 arquivo(s))
+- .gitignore, BRIEF.md, build-test.log, pom.xml, README.en.md, README.md
 
-The application starts on port `8080`. No database setup is required; repositories are in-memory and the seed loads roles and demo users on startup.
 
-### Frontend
+## Trade-offs e decisões
 
-#### PT-BR
-```
-cd frontend
-npm install
-npm run dev
-```
+- Cadeia nova por requisicao: manter a cadeia como bean singleton fez regras de risco pararem de executar apos a primeira requisicao. A fabrica agora cria uma cadeia nova a cada pagamento.
+- `BigDecimal` para dinheiro, nunca `double`, com `HALF_EVEN` de duas casas.
+- API versionada e erros no formato RFC 7807 (ProblemDetail).
+- Sem banco de dados: o registro mantem transacoes em memoria para manter o foco nos padroes; a interface de repositorio deixa o caminho aberto para trocar por JPA sem mexer no servico.
+- Sem gateway externo: e uma simulacao honesta, nenhum pagamento real acontece.
+- Mensageria e metricas simuladas em memoria, expostas apenas pelo endpoint de observabilidade.
 
-O servidor de desenvolvimento roda na porta `5173` e encaminha `/api` e `/auth` para o backend na porta `8080`.
+## Limitações conhecidas
 
-#### EN
-```
-cd frontend
-npm install
-npm run dev
-```
-
-The dev server runs on port `5173` and proxies `/api` and `/auth` to the backend on port `8080`.
+- Historico em memoria: reiniciar a aplicacao apaga as transacoes.
+- Nao ha autenticacao nem autorizacao.
+- Mensageria e metricas nao integram provedores externos.
+- Listas e regras fixas no codigo (ex: lista restrita, limite de velocidade).
 
 ## Testes
 
-### PT-BR
-Executa a suíte JUnit 5 do backend:
-
 ```
-mvn test
+./mvnw test
 ```
 
-Resultado: 28 testes, 0 falhas, 0 erros.
-
-### EN
-Runs the backend JUnit 5 suite:
-
-```
-mvn test
-```
-
-Result: 28 tests, 0 failures, 0 errors.
-
-### Build do frontend
-
-#### PT-BR
-```
-cd frontend
-npm run build
-```
-
-#### EN
-```
-cd frontend
-npm run build
-```
-
-## Endpoints principais
-
-| Método | Caminho | Acesso | Descrição (PT-BR) | Description (EN) |
-|--------|---------|--------|-------------------|------------------|
-| POST | `/auth/login` | público | Autentica e retorna JWT | Authenticates and returns JWT |
-| GET | `/auth/me` | autenticado | Dados da sessão | Session data |
-| GET | `/api/usuarios` | ADMIN | Lista usuários | Lists users |
-| POST | `/api/usuarios` | ADMIN | Cadastra usuário | Creates a user |
-| POST | `/api/usuarios/{id}/papeis` | ADMIN | Atribui papel | Assigns a role |
-| GET | `/api/papeis` | autenticado | Lista papéis | Lists roles |
-| GET | `/api/recursos` | autenticado | Lista recursos | Lists resources |
+O repositorio contem testes automatizados.
 
 ## Licença
 
-MIT
+Distribuído sob a licenca MIT. Consulte o arquivo `LICENSE` do repositorio.
 
 ## Autor
 
-Kelvin Oliveira
+Kelvin Oliveira, https://github.com/KelvinOliveiraCode
+Portfolio: https://kelvinoliveiracode.github.io/portfolio/
