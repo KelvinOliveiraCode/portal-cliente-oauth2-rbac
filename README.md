@@ -1,117 +1,129 @@
 # portal-cliente-oauth2-rbac
 
-<div align="center">
-
 [English](README.en.md) · **Português (Brasil)**
 
-</div>
-
-[![Java 21](https://img.shields.io/badge/Java-21-%23007396?style=flat-square)](https://adoptium.net/) [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-%236DB33F?style=flat-square)](https://spring.io/projects/spring-boot) [![Maven](https://img.shields.io/badge/Maven-3.9-C71A36?style=flat-square&logo=apache-maven)](https://maven.apache.org/) [![JUnit 5](https://img.shields.io/badge/JUnit-5-25A162?style=flat-square&logo=junit5)](https://junit.org/junit5/) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
-
-### Projeto funcional ,  portal-cliente-oauth2-rbac
-
----
+[![Java 21](https://img.shields.io/badge/Java-21-%23007396?style=flat-square)](#) [![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3.4-%236DB33F?style=flat-square)](#) [![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT-6DB33F?style=flat-square)](#) [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](#) [![JUnit 5](https://img.shields.io/badge/JUnit-5-25A162?style=flat-square&logo=junit5)](#) [![MIT License](https://img.shields.io/badge/License-MIT-f4c430?style=flat-square)](LICENSE)
 
 ## O que é
 
-Projeto funcional ,  portal-cliente-oauth2-rbac
+**Portal de clientes** com autenticação **OAuth2/JWT** e controle de acesso **RBAC** (Role-Based Access Control). Backend Spring Boot 3.4 (Java 21) expõe API REST de autenticação e CRUD de usuários, papéis e recursos; frontend React/TS/Vite consome a API com login e dashboard. Um estudo completo de segurança de acesso em aplicação web.
 
----
+## Status
 
-## Início Rápido
+Funcional e testado (28 testes, BUILD SUCCESS). Demo local via backend + frontend.
 
-```bash
-# Clone e entre
-git clone https://github.com/KelvinOliveiraCode/<repo>.git
-cd <repo>
+## Funcionalidades
 
-# Build e execute os testes
-./mvnw verify
+- **Autenticação JWT**: login, logout e `/me` (usuário atual).
+- **RBAC**: endpoints protegidos por papel (`/api/admin/**` exige `ROLE_ADMIN`; `GET /api/usuarios` só admin; demais `/api/**` autenticados).
+- **CRUD de papéis, recursos e usuários** (controllers `PapelController`, `RecursoController`, `UsuarioController`).
+- **Frontend React/TS/Vite**: página de login, navegação e dashboard.
+- **Segurança**: `SecurityConfig` com filtro JWT, CSRF desabilitado, regras de autorização.
 
-# Execute a aplicação
-./mvnw spring-boot:run
-# API disponível em http://localhost:8080
-# Swagger UI em http://localhost:8080/docs
+## Arquitetura
+
+Backend em camadas (controller → service → domain) com Spring Security + JWT (`jjwt`). Frontend em `/frontend` (React + Vite + Tailwind) consome a API.
+
+```mermaid
+flowchart LR
+    FE[Frontend React/TS] -->|POST /auth/login| AC[AuthController]
+    FE -->|GET/POST /api/**| API[Controllers: usuarios, papeis, recursos]
+    API --> SEC[SecurityConfig + JwtAuthenticationFilter]
+    SEC --> AUTH[RBAC: ADMIN / autenticado]
+    AC --> JWT[jjwt - token JWT]
+    API --> DOM[domain: Usuario, Papel, Recurso]
 ```
 
-## Como funciona
+## Stack
 
-Estrutura limpa e modular com separação de responsabilidades.
+- Java 21, Spring Boot 3.4.4
+- Spring Web, Spring Security, Spring Validation
+- jjwt (API/impl/jackson)
+- Spring Security Test, JUnit 5
+- Frontend: React 18, TypeScript, Vite, Tailwind
 
----
+## Estrutura do repositório
 
-## Capacidades
+```
+portal-cliente-oauth2-rbac/
+├── pom.xml · README · BRIEF.md
+├── src/main/java/com/kelvinoliveis/portalrbac/
+│   ├── controller/       # AuthController, Papel, Recurso, Usuario
+│   ├── security/         # SecurityConfig, JwtAuthenticationFilter
+│   ├── service/          # Auth, Token, Papel, Recurso, Usuario
+│   ├── domain/           # Usuario, Papel, Recurso
+│   └── dto/              # LoginRequest, AuthResponse, papéis, etc.
+├── src/test/             # 28 testes (controllers + services)
+└── frontend/             # React + TS + Vite + Tailwind
+```
 
-| Capacidade | Descrição |
-|------------|-------------|
-| API REST | Spring Boot 3, endpoints versionados, erros RFC 7807 |
-| Cálculo de Taxa | Strategy pattern ,  PIX R$0,49, Boleto R$2,49, Crédito 3,99%, Débito 1,89% |
-| Validação de Risco | Chain of Responsibility ,  HighValue -> Blocklist -> Velocity |
-| Registro de Transações | Registry Singleton em memória com trilha de auditoria completa |
-| Sistema de Eventos | Observer pattern ,  mensageria e métricas desacopladas |
-| Observabilidade | Endpoint /api/v1/observability expondo efeitos dos listeners |
-| Documentação da API | springdoc-openapi ,  Swagger UI em /docs, OpenAPI 3 em /api-docs |
-| Testes | JUnit 5, Mockito, MockMvc ,  testes de integração + unidade |
+## Endpoints principais
 
+| Método | Rota | Acesso |
+|--------|------|--------|
+| POST | `/auth/login` | público |
+| POST | `/auth/logout` | autenticado |
+| GET | `/auth/me` | autenticado |
+| GET/POST | `/api/papeis` `/api/papeis/{id}` | autenticado |
+| GET/POST | `/api/recursos` `/api/recursos/{id}` | autenticado |
+| GET/POST | `/api/usuarios` `/api/usuarios/{id}` | `GET` exige ADMIN |
 
----
+## Pré-requisitos e instalação
 
+- JDK 21, Maven 3.9+ (backend)
+- Node.js (frontend)
 
+```bash
+git clone https://github.com/KelvinOliveiraCode/portal-cliente-oauth2-rbac.git
+cd portal-cliente-oauth2-rbac
+```
 
----
+## Como executar
 
-## Perguntas Frequentes
+```bash
+# backend
+./mvnw spring-boot:run        # API em http://localhost:8080
 
-<details>
-<summary><strong>O que é este projeto?</strong></summary>
+# frontend (outro terminal)
+cd frontend && npm install && npm run dev
+```
 
-Um estudo/projeto em Java/Spring Boot demonstrando conceitos fundamentais.
+Para rodar os testes:
 
-</details>
+```bash
+./mvnw test
+```
 
-<details>
-<summary><strong>Como executar?</strong></summary>
+## Testes e qualidade
 
-Veja [Início Rápido](#início-rápido) para comandos copiáveis.
+Comando real (verificado pelo agente, Maven 3.9.16 / JDK 21):
 
-</details>
+```bash
+mvn -B test
+# Tests run: 28, Failures: 0, Errors: 0 — BUILD SUCCESS
+# (AuthController 2, AuthService 4, Papel 6, Recurso 5, Token 3, Usuario 7, +1)
+```
 
-<details>
-<summary><strong>Há testes?</strong></summary>
+Não há CI configurado (o diretório `frontend/` contém logs de build/install commitados — ver `HYGIENE.md`).
 
-Nenhum teste automatizado neste repositório.
+## Decisões técnicas e trade-offs
 
-</details>
+- **JWT stateless** para autenticação: escala sem sessão no servidor; em troca, revogação de token é limitada.
+- **RBAC por papel** em vez de permissões granulares por recurso: simples e legível; o custo é menos flexibilidade em políticas refinadas.
+- **Filtro JWT customizado** (`JwtAuthenticationFilter`) injetado antes do filtro de autenticação padrão do Spring Security.
 
-<details>
-<summary><strong>Posso usar em produção?</strong></summary>
+## Limitações conhecidas e roadmap
 
-Este é um **projeto de estudo/portfólio**. Revise e endureça (auth, persistência, monitoramento, etc.) antes de usar em produção.
+- Tokens JWT sem estratégia de refresh/revogação na entrega atual.
+- Persistência **em memória** (`ConcurrentHashMap` nos repositórios; sem banco/datasource) — dados se perdem ao reiniciar.
+- Logs de build/install commitados em `frontend/` devem ir para `.gitignore` (ver `HYGIENE.md`).
 
-</details>
+## Processo de desenvolvimento
 
+Projeto individual de Kelvin Oliveira, construído com agentes de IA orquestrados e revisado pelo autor. A arquitetura de segurança (OAuth2/JWT/RBAC) e a revisão são do autor.
 
+## Licença e autor
 
----
+MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira.
 
-## Documentação
-
-- **Código-Fonte** ,  Navegue pelo diretório `src/` para detalhes de implementação
-- **Referência da API** ,  Swagger UI em `/docs` ao executar
-- **Diagrama de Arquitetura** ,  Veja [architecture.mermaid](docs/architecture.mermaid) (se presente)
-- **Changelog** ,  [CHANGELOG.md](CHANGELOG.md) (se presente)
-- **Contribuindo** ,  [CONTRIBUTING.md](CONTRIBUTING.md) (se presente)
-
-## Licença
-
-[MIT](LICENSE) ,  Kelvin Oliveira
-
----
-
-<div align="center">
-
-**Construído com** · Java 21 + Spring Boot 3 + Maven
-
-**Autor** · [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
-
-</div>
+**Autor**: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfólio](https://kelvinoliveiracode.github.io/portfolio/)
