@@ -14,11 +14,11 @@ Funcional e testado (28 testes, BUILD SUCCESS). Demo local via backend + fronten
 
 ## Funcionalidades
 
-- **Autenticação JWT**: login, logout e `/me` (usuário atual).
-- **RBAC**: endpoints protegidos por papel (`/api/admin/**` exige `ROLE_ADMIN`; `GET /api/usuarios` só admin; demais `/api/**` autenticados).
+- Autenticação JWT: login, logout e `/me` (usuário atual).
+- RBAC: endpoints protegidos por papel (`/api/admin/**` exige `ROLE_ADMIN`; `GET /api/usuarios` só admin; demais `/api/**` autenticados).
 - **CRUD de papéis, recursos e usuários** (controllers `PapelController`, `RecursoController`, `UsuarioController`).
-- **Frontend React/TS/Vite**: página de login, navegação e dashboard.
-- **Segurança**: `SecurityConfig` com filtro JWT, CSRF desabilitado, regras de autorização.
+- Frontend React/TS/Vite: página de login, navegação e dashboard.
+- Segurança: `SecurityConfig` com filtro JWT, CSRF desabilitado, regras de autorização.
 
 ## Arquitetura
 
@@ -44,7 +44,7 @@ flowchart LR
 
 ## Estrutura do repositório
 
-```
+```text
 portal-cliente-oauth2-rbac/
 ├── pom.xml · README · BRIEF.md
 ├── src/main/java/com/kelvinoliveis/portalrbac/
@@ -104,7 +104,7 @@ mvn -B test
 # (AuthController 2, AuthService 4, Papel 6, Recurso 5, Token 3, Usuario 7, +1)
 ```
 
-Não há CI configurado (o diretório `frontend/` contém logs de build/install commitados — ver `HYGIENE.md`).
+Não há CI configurado (o diretório `frontend/` contém logs de build/install commitados, ver `HYGIENE.md`).
 
 ## Decisões técnicas e trade-offs
 
@@ -115,7 +115,7 @@ Não há CI configurado (o diretório `frontend/` contém logs de build/install 
 ## Limitações conhecidas e roadmap
 
 - Tokens JWT sem estratégia de refresh/revogação na entrega atual.
-- Persistência **em memória** (`ConcurrentHashMap` nos repositórios; sem banco/datasource) — dados se perdem ao reiniciar.
+- Persistência **em memória** (`ConcurrentHashMap` nos repositórios; sem banco/datasource), dados se perdem ao reiniciar.
 - Logs de build/install commitados em `frontend/` devem ir para `.gitignore` (ver `HYGIENE.md`).
 
 ## Processo de desenvolvimento
@@ -124,6 +124,6 @@ Projeto individual de Kelvin Oliveira, construído com agentes de IA orquestrado
 
 ## Licença e autor
 
-MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira.
+MIT. Copyright (c) 2026 Kelvin Rebelo de Oliveira.
 
 **Autor**: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfólio](https://kelvinoliveiracode.github.io/portfolio/)

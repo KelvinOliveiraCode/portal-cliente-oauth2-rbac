@@ -14,11 +14,11 @@ Working and tested (28 tests, BUILD SUCCESS). Local demo via backend + frontend.
 
 ## Features
 
-- **JWT authentication**: login, logout and `/me` (current user).
-- **RBAC**: endpoints protected by role (`/api/admin/**` requires `ROLE_ADMIN`; `GET /api/usuarios` admin only; other `/api/**` authenticated).
+- JWT authentication: login, logout and `/me` (current user).
+- RBAC: endpoints protected by role (`/api/admin/**` requires `ROLE_ADMIN`; `GET /api/usuarios` admin only; other `/api/**` authenticated).
 - **CRUD of roles, resources and users** (`PapelController`, `RecursoController`, `UsuarioController`).
-- **React/TS/Vite frontend**: login page, navigation and dashboard.
-- **Security**: `SecurityConfig` with a JWT filter, CSRF disabled, authorization rules.
+- React/TS/Vite frontend: login page, navigation and dashboard.
+- Security: `SecurityConfig` with a JWT filter, CSRF disabled, authorization rules.
 
 ## Architecture
 
@@ -44,7 +44,7 @@ flowchart LR
 
 ## Repository layout
 
-```
+```text
 portal-cliente-oauth2-rbac/
 ├── pom.xml · README · BRIEF.md
 ├── src/main/java/com/kelvinoliveis/portalrbac/
@@ -105,7 +105,7 @@ mvn -B test
 # (AuthController 2, AuthService 4, Papel 6, Recurso 5, Token 3, Usuario 7, +1)
 ```
 
-There is no CI configured (the `frontend/` folder has committed build/install logs — see `HYGIENE.md`).
+There is no CI configured (the `frontend/` folder has committed build/install logs, see `HYGIENE.md`).
 
 ## Technical decisions and trade-offs
 
@@ -116,7 +116,7 @@ There is no CI configured (the `frontend/` folder has committed build/install lo
 ## Known limitations and roadmap
 
 - JWT tokens without a refresh/revocation strategy in the current delivery.
-- **In-memory persistence** (`ConcurrentHashMap` in the repositories; no database/datasource) — data is lost on restart.
+- **In-memory persistence** (`ConcurrentHashMap` in the repositories; no database/datasource), data is lost on restart.
 - Committed build/install logs under `frontend/` should move to `.gitignore` (see `HYGIENE.md`).
 
 ## Development process
@@ -125,6 +125,6 @@ An individual project by Kelvin Oliveira, built with orchestrated AI agents and 
 
 ## License and author
 
-MIT — Copyright (c) 2026 Kelvin Rebelo de Oliveira.
+MIT. Copyright (c) 2026 Kelvin Rebelo de Oliveira.
 
 **Author**: [Kelvin Oliveira](https://github.com/KelvinOliveiraCode) · [Portfolio](https://kelvinoliveiracode.github.io/portfolio/)
